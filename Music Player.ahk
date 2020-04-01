@@ -76,6 +76,9 @@ return
 ; SUBROUTINES
 ;****************************
 
+;****************************
+; Play All
+;****************************
 PlayAll:
 SongCount := 0
 ContLoop := true
@@ -93,6 +96,9 @@ ContLoop := true
 
 	} return
 
+;****************************
+; Play One
+;****************************
 PlayOne:
 ContLoop := false
 
@@ -107,11 +113,16 @@ If (A_GuiEvent = "DoubleClick")
 	
 } return
 
-
+;****************************
+; Reformat Filename
+;****************************
 Filename:
 word_array := StrSplit(Filename , ".mp3") 
 return
 
+;****************************
+; Repeat
+;****************************
 Repeat:
 GuiControl,, SongName, Now Repeating :`r%Filename%	
 Contloop = true
@@ -119,10 +130,16 @@ while (contloop)
 Soundplay, %SongPath%%Filename%.mp3,wait
 return
 
+;****************************
+; Move the UI
+;****************************
 UIMove:
 PostMessage, 0xA1, 2,,, A
 return
 
+;****************************
+; Stop Play
+;****************************
 Stop:
 LV_Modify(SongCount, "-Select")
 ContLoop := false
@@ -130,6 +147,9 @@ GuiControl,Text, SongName, Now Playing :
 Soundplay, nothing.mp3
 return
 
+;****************************
+; Next Song
+;****************************
 Next:
  LV_Modify(SongCount, "-Select")
  LV_Modify(SongCount+1, "Select")
@@ -142,6 +162,9 @@ SongCount++
 Soundplay,%SongPath%%Value%.mp3
 return
 
+;****************************
+; Previous Song
+;****************************
 Previous:
  LV_Modify(SongCount, "-Select")
  LV_Modify(SongCount-1, "Select")
@@ -154,26 +177,34 @@ SongCount--
 Soundplay,%SongPath%%Value%.mp3
 return
 
-Mute:
-Send {Volume_Mute} 
-return
-
+;****************************
+; Volume Down
+;****************************
 VDown:
 Send {Volume_Down 3}
 return
 
+;****************************
+; Volume Up
+;****************************
 VUp:
 Send {Volume_Up}
 return
 
+;****************************
+; Minimize Window
+;****************************
 Min:
 WinMinimize
 return
 
+;****************************
+; Close App
+;****************************
 Close:
 ExitApp
-GuiEscape:
-return
+
 
 ExitApp
-;`r
+
+; New line char - `r
