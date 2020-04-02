@@ -298,7 +298,9 @@ MediaInfo_DumpInfo(MediaFile := "") {
    DllCall(Delete, "UInt", hnd)
    Return Info
 }
-
+;****************************
+; INSTALLATION FILES
+;****************************
 ProgramSetup:
 FileCreateDir, Kismet Player Files
 FileCreateDir, Kismet Player Files\Songs\
