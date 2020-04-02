@@ -6,7 +6,6 @@ bin-release/
 
 # Other files and folders
 .settings/
-.Songs/
 
 AHK Tester.ahk
 format songs popup.txt
@@ -14,8 +13,7 @@ format songs popup.txt
 # Executables
 *.exe
 
-*.png
-*.jpg
+
 *.ai
 *.mp3
 *.zip
