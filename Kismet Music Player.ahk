@@ -1,7 +1,7 @@
-#NoEnv  ; RecommContLooped for performance and compatibility with future AutoHotkey releases.
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 #SingleInstance force
 #Persistent
-SendMode Input  ; RecommContLooped for new scripts due to its superior speed and reliability.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 DetectHiddenWindows, On
 SetTitleMatchMode, 2 ; regex
@@ -20,13 +20,12 @@ KismetDir = %Dir%\Kismet Player Files\
 SongPath = %KismetDir%\Songs\
 ArraySongList := []
 ContLoop := true
-Value := ArraySongList[%SongCount%]
-Filename = U2-Vertigo.mp3
-word_array =
-word_array2 =
+Filename = 
+ShortName_array =
+Duration_array =
 TotalMilliseconds =
 LongPath =
-ElapsedTime = 0
+ElapsedTime := 0
 
 
 ;****************************
@@ -51,9 +50,9 @@ Loop, %SongPath%*.mp3
 {
 		LV_ModifyCol(1,319)
 		Filename = %A_LoopFilename%
-		Gosub Filename
-		LV_Add("", word_array[1])
-		ArraySongList.Push( word_array[1])
+		Gosub ShortenFilename
+		LV_Add("", ShortName_array[1])
+		ArraySongList.Push( ShortName_array[1])
 }
 ;****************************
 ; Top Image
@@ -107,10 +106,16 @@ ContLoop := true
 	{
 		while (ContLoop)
 		{
-		gosub Filename	
+		
 		SongCount++
-		FileName = %A_LoopFileName%
-		GuiControl,, SongName, Now Playing :`r%A_LoopFileName%
+			
+			Filename = %A_LoopFileName%
+			gosub ShortenFilename
+			
+			Filename = % ShortName_array[1]
+			gosub GetDuration
+		
+		GuiControl,, SongName, Now Playing :`r%Filename%
 		SetTimer ElapsedTimer, 1
 		SoundPlay, %A_LoopFileShortPath%,Wait
 		}
@@ -127,12 +132,17 @@ ElapsedTime := 0
 If (A_GuiEvent = "DoubleClick")
 {
 	gosub Stop												; Stop loops and waits if needed
-	LV_GetText(FileName, A_EventInfo, 1)
+	LV_GetText(Filename, A_EventInfo, 1)
 	SongCount = %A_EventInfo%
+	gosub GetDuration
+	
+	
 	GuiControl,, SongName, Now Playing :`r%Filename%		; Filename without .mp3
-	;Filename = %Filename%
 	Soundplay, %SongPath%%Filename%.mp3
-	SetTimer, ElapsedTimer, 1								; Count milliseconds elapsed of song
+	SetTimer, ElapsedTimer, 1	
+	SetTimer, CheckTime, 1
+	
+
 } return
 
 ;****************************
@@ -140,20 +150,22 @@ If (A_GuiEvent = "DoubleClick")
 ; Track Elapsed Time of Song
 ;****************************
 ElapsedTimer:
-ElapsedTime++
-if ElapsedTime = 900000 				; Turn off counter at 15 minutes
-{
-	SetTimer ElapsedTimer, Off
-	ElapsedTime := 0
-	MsgBox Force Stop
-}
+ElapsedTime := ElapsedTime + 16
+
+CheckTime:
+IfGreaterorEqual, %ElapsedTime%,  %TotalMilliseconds% 		
+	{
+		MsgBox ForceStop
+		SetTimer ElapsedTimer, Off
+		ElapsedTime := 0
+	}	
 return
 
 ;****************************
-; Reformat Filename
+; Shorten Filename
 ;****************************
-Filename:
-word_array := StrSplit(Filename , ".mp3") 
+ShortenFilename:
+ShortName_array := StrSplit(Filename , ".mp3") 
 return
 
 ;****************************
@@ -171,8 +183,8 @@ return
 RepeatQue:
 GuiControl,, SongName, Now Repeating :`r%Filename%	
 SetTimer, ElapsedTimer, OFF
-Contloop = true
-while (contloop)	
+Contloop := true
+while (Contloop)	
 {	
 	Soundplay, %SongPath%%Filename%.mp3,wait
 }
@@ -203,10 +215,9 @@ return
 Next:
  LV_Modify(SongCount, "-Select")
  LV_Modify(SongCount+1, "Select")
-Soundplay, nothing.mp3
-ContLoop = true
-ContLoop = false
+gosub Stop
 Filename := ArraySongList[SongCount+1]
+gosub GetDuration
 GuiControl,Text, SongName, Now Playing : `r%Filename%
 SongCount++
 Soundplay,%SongPath%%Filename%.mp3
@@ -218,10 +229,9 @@ return
 Previous:
  LV_Modify(SongCount, "-Select")
  LV_Modify(SongCount-1, "Select")
-Soundplay, nothing.mp3
-ContLoop = true
-ContLoop = false
+gosub Stop
 Filename := ArraySongList[SongCount-1]
+gosub GetDuration
 GuiControl,Text, SongName, Now Playing : `r%Filename%
 SongCount--
 Soundplay,%SongPath%%Filename%.mp3
@@ -267,17 +277,17 @@ ExitApp
 ;****************************
 GetDuration:
 LongPath = %SongPath%%Filename%.mp3
-G := MediaInfo_DumpInfo(LongPath)
+SongMetaData := MediaInfo_DumpInfo(LongPath)
 SetTimer, ElapsedTimer, Off
 
-Loop, parse, G, `n,
+Loop, parse, SongMetaData, `n,
          {
          If A_LoopField contains Duration
             {
-			Filename2 = %A_LoopField%
-			Word_Array2 := StrSplit( Filename2," ","Duration                                 :")
-			MinutesDuration := Word_Array2[35]
-			SecondsDuration := Word_Array2[37]
+			DurationLine = %A_LoopField%
+			Duration_Array := StrSplit( DurationLine," ","Duration                                 :")
+			MinutesDuration := Duration_Array [35]
+			SecondsDuration := Duration_Array [37]
 			MinutesTotal := % MinutesDuration * 60000
 			SecondsTotal := % SecondsDuration * 1000
 			TotalMilliseconds := MinutesTotal + SecondsTotal - ElapsedTime
