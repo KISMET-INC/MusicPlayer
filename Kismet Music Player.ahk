@@ -150,12 +150,15 @@ If (A_GuiEvent = "DoubleClick")
 ; Track Elapsed Time of Song
 ;****************************
 ElapsedTimer:
-ElapsedTime := ElapsedTime + 16
+ElapsedTime := ElapsedTime + 16  							; Why 16? For some reason the timer isnt always exact milliseconds
 
+;****************************
+; Checj Time
+; Stop the Elapsed timer 
+;****************************
 CheckTime:
-IfGreaterorEqual, %ElapsedTime%,  %TotalMilliseconds% 		
+IfGreaterorEqual, %ElapsedTime%,  %TotalMilliseconds% 		; After song reaches the end stop the elapsed time timer
 	{
-		MsgBox ForceStop
 		SetTimer ElapsedTimer, Off
 		ElapsedTime := 0
 	}	
@@ -182,7 +185,7 @@ return
 ;****************************
 RepeatQue:
 GuiControl,, SongName, Now Repeating :`r%Filename%	
-SetTimer, ElapsedTimer, OFF
+SetTimer, ElapsedTimer, OFF										; Repeating has started no need for elapsed timer anymore
 Contloop := true
 while (Contloop)	
 {	
